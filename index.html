@@ -436,12 +436,26 @@
     .card[data-status="완료"] { opacity: .7; }
     .card[data-status="보류"] { opacity: .8; }
 
-    .card-title {
+    .card-top {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
       margin-bottom: 10px;
+    }
+
+    .badge.tiny {
+      min-height: 20px;
+      padding: 2px 8px;
+      font-size: .68rem;
+    }
+
+    .card-top-spacer {
+      flex: 1 1 auto;
+    }
+
+    .card-title {
+      margin-bottom: 8px;
     }
 
     .card-title strong {
@@ -450,7 +464,7 @@
       overflow-wrap: anywhere;
     }
 
-    .badges, .actions {
+    .badges {
       display: flex;
       flex-wrap: wrap;
       gap: 7px;
@@ -519,6 +533,12 @@
       font-size: .92rem;
     }
 
+    .est-time {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .82rem;
+    }
+
     .note {
       border-left: 3px solid var(--accent);
       border-radius: 0 8px 8px 0;
@@ -529,17 +549,36 @@
       font-size: .93rem;
     }
 
-    .actions {
-      margin-top: 12px;
+    .note.note-memo {
+      border-left-color: var(--accent);
+      background: #f6f5ff;
+    }
+
+    .note.note-action {
+      border-left-color: #1b8fd1;
+      background: #eaf6ff;
+    }
+
+    .note.note-hold {
+      border-left-color: var(--warning);
+      background: var(--warning-soft);
+    }
+
+    .due-row {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 7px;
-      width: 100%;
-      min-width: 0;
+      gap: 8px;
+      margin-top: 8px;
     }
 
-    .actions button {
+    .done-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .done-actions button {
       min-height: 40px;
       padding: 7px 12px;
       font-size: .88rem;
@@ -563,23 +602,12 @@
     }
 
     /* 쪼개기는 핵심 기능이라 라벨을 남기되, 자리는 작게. */
-    .split-btn {
+    .card-top .icon-btn {
       flex: 0 0 auto;
-      padding: 7px 10px;
-      font-size: .85rem;
-    }
-
-    /* 수정/삭제는 펜·휴지통 아이콘만으로 충분해서 오른쪽 끝에 작게 몰아둡니다. */
-    .actions-spacer {
-      flex: 1 1 auto;
-    }
-
-    .icon-btn {
-      flex: 0 0 auto;
-      min-height: 32px;
-      min-width: 32px;
+      min-height: 24px;
+      min-width: 24px;
       padding: 0;
-      font-size: .95rem;
+      font-size: .82rem;
       line-height: 1;
       color: var(--muted-soft);
       border-color: transparent;
@@ -1614,7 +1642,7 @@
                 <strong>${escapeHtml(task.title)}</strong>
                 <div class="meta">${escapeHtml(task.project)} · ${escapeHtml(task.estimatedTime)}</div>
               </div>
-              <div class="actions">
+              <div class="done-actions">
                 <button type="button" data-action="restore" data-id="${task.id}">되돌리기</button>
                 <button type="button" class="danger" data-action="delete" data-id="${task.id}">삭제</button>
               </div>
@@ -1629,29 +1657,28 @@
       const splitOpen = false;
       return `
         <article class="card" data-task="${task.id}" data-priority="${escapeHtml(task.priority)}" data-status="${escapeHtml(task.status)}">
-          <div class="card-title">
-            <strong>${escapeHtml(task.title)}</strong>
-            <span class="badge ${priorityClass}" data-priority="${escapeHtml(task.priority)}">${escapeHtml(displayPriority(task.priority))}</span>
-          </div>
-          <div class="badges">
-            <span class="badge accent" data-project="${escapeHtml(task.project)}">${escapeHtml(task.project)}</span>
-            <select class="badge status-select" data-action="status-select" data-id="${task.id}" data-status="${escapeHtml(task.status)}" aria-label="상태 변경">
+          <div class="card-top">
+            <span class="badge tiny accent" data-project="${escapeHtml(task.project)}">${escapeHtml(task.project)}</span>
+            <span class="badge tiny ${priorityClass}" data-priority="${escapeHtml(task.priority)}">${escapeHtml(displayPriority(task.priority))}</span>
+            <select class="badge tiny status-select" data-action="status-select" data-id="${task.id}" data-status="${escapeHtml(task.status)}" aria-label="상태 변경">
               ${STATUSES.map((s) => `<option value="${s}" ${s === task.status ? "selected" : ""}>${escapeHtml(s)}</option>`).join("")}
             </select>
-          </div>
-          <div class="meta">
-            <span>소요 ${escapeHtml(task.estimatedTime)}</span>
-          </div>
-          ${task.nextAction ? `<div class="note"><strong>다음 행동</strong><br>${escapeHtml(task.nextAction)}</div>` : ""}
-          ${task.holdReason ? `<div class="note"><strong>보류 사유</strong><br>${escapeHtml(task.holdReason)}</div>` : ""}
-          <div class="actions">
-            <span class="due-label">마감</span>
-            <input type="date" class="due-input" data-action="due-edit" data-id="${task.id}" value="${escapeHtml(task.dueDate)}" aria-label="마감일 수정">
-            <button type="button" class="split-btn" data-action="split-open" data-id="${task.id}">✂️ 쪼개기</button>
-            <span class="actions-spacer"></span>
+            <span class="card-top-spacer"></span>
+            <button type="button" class="icon-btn" data-action="split-open" data-id="${task.id}" title="쪼개기" aria-label="하위 작업 쪼개기">✂️</button>
             <button type="button" class="icon-btn" data-action="edit" data-id="${task.id}" title="수정" aria-label="수정">✏️</button>
             <button type="button" class="icon-btn danger" data-action="delete" data-id="${task.id}" title="삭제" aria-label="삭제">🗑️</button>
           </div>
+          <div class="card-title">
+            <strong>${escapeHtml(task.title)}</strong>
+          </div>
+          ${task.memo ? `<div class="note note-memo"><strong>메모</strong><br>${escapeHtml(task.memo)}</div>` : ""}
+          <div class="due-row">
+            <span class="due-label">마감</span>
+            <input type="date" class="due-input" data-action="due-edit" data-id="${task.id}" value="${escapeHtml(task.dueDate)}" aria-label="마감일 수정">
+            <span class="est-time">소요 ${escapeHtml(task.estimatedTime)}</span>
+          </div>
+          ${task.nextAction ? `<div class="note note-action"><strong>다음 행동</strong><br>${escapeHtml(task.nextAction)}</div>` : ""}
+          ${task.holdReason ? `<div class="note note-hold"><strong>보류 사유</strong><br>${escapeHtml(task.holdReason)}</div>` : ""}
           <div class="split-box ${splitOpen ? "open" : ""}" id="split-${task.id}">
             <label>하위 작업을 줄바꿈으로 입력
               <textarea data-split-input="${task.id}" placeholder="1막 장면별 분위기 적기&#10;2막 전환 큐 확인"></textarea>
