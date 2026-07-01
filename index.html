@@ -261,6 +261,7 @@
 
     .tabs {
       display: flex;
+      justify-content: center;
       gap: 4px;
       flex-wrap: wrap;
       margin: 10px 0 8px;
@@ -314,11 +315,25 @@
     }
 
     .search {
+      position: relative;
       margin: 8px 0 12px;
     }
 
+    .search::before {
+      content: "\1F50D";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .85rem;
+      opacity: .55;
+      pointer-events: none;
+    }
+
     .search input {
+      width: 100%;
       min-height: 42px;
+      padding-left: 32px;
     }
 
     /* 상단 통계는 큼직한 카드 4개가 아니라, 숫자만 훑고 지나가는
@@ -593,11 +608,11 @@
     }
 
     .due-input {
-      width: 128px;
+      width: 100px;
       max-width: 100%;
-      min-height: 38px;
-      padding: 6px 8px;
-      font-size: .85rem;
+      min-height: 26px;
+      padding: 2px 3px;
+      font-size: .74rem;
       flex: 0 0 auto;
     }
 
@@ -1102,13 +1117,13 @@
     function loadTasks() {
       const raw = readStoredTasks();
       if (!raw) {
-        state.tasks = sampleTasks();
+        state.tasks = [];
         saveTasks({ remote: false });
         return;
       }
       try {
         const parsed = JSON.parse(raw);
-        state.tasks = migrateTasks(parsed);
+        state.tasks = migrateTasks(parsed).filter((task) => !task.isSample);
         saveTasks({ remote: false });
       } catch {
         state.tasks = [];
