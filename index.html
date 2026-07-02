@@ -251,9 +251,31 @@
       margin-bottom: 16px;
     }
 
-    .quick .primary {
-      align-self: end;
+    .quick-buttons {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .quick-buttons .primary {
       padding: 0 22px;
+    }
+
+    .detail-btn {
+      align-self: end;
+      min-height: 42px;
+      padding: 0 12px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted-soft);
+      background: transparent;
+      border-color: var(--line);
+    }
+
+    .detail-btn:hover {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      border-color: var(--accent-soft-strong);
     }
 
     .quick .primary::before {
@@ -836,7 +858,10 @@
         빠른 입력
         <input id="quickInput" autocomplete="off" placeholder="생각나는 일 아무거나 입력">
       </label>
-      <button class="primary" type="submit">추가</button>
+      <div class="quick-buttons">
+        <button class="detail-btn" type="button" id="quickDetailBtn" title="분류를 직접 정해서 추가">자세히</button>
+        <button class="primary" type="submit">추가</button>
+      </div>
     </form>
 
     <nav class="tabs" aria-label="주요 탭">
@@ -1876,6 +1901,15 @@
       input.focus();
     }
 
+    function submitQuickInputDetailed() {
+      const input = $("#quickInput");
+      const value = input.value.trim();
+      if (!value) return;
+      const task = addTask(parseQuickInput(value));
+      input.value = "";
+      openEditModal(task.id);
+    }
+
     function bindEvents() {
       $("#editStatus").addEventListener("change", () => {
         $("#editHoldReasonField").hidden = $("#editStatus").value !== "보류";
@@ -1884,6 +1918,9 @@
       $("#quickForm").addEventListener("submit", (event) => {
         event.preventDefault();
         submitQuickInput();
+      });
+      $("#quickDetailBtn").addEventListener("click", () => {
+        submitQuickInputDetailed();
       });
       $("#quickInput").addEventListener("keydown", (event) => {
         if (event.key !== "Enter") return;
